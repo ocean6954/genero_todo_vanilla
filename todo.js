@@ -3,6 +3,48 @@ const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
 let list_id = 0;
 
+// ToDoアイテムを作成する関数（永続化対応）
+const createTodoItem = (text, checked = false) => {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  span.textContent = text;
+
+  const checkBox = createCheckBox();
+  checkBox.checked = checked;
+  const editBtn = createEditButton(li, span);
+  const delBtn = createDeleteButton(li);
+
+  li.appendChild(checkBox);
+  li.appendChild(span);
+  li.appendChild(editBtn);
+  li.appendChild(delBtn);
+
+  // チェックボックスの表示制御
+  checkBox.addEventListener("change", () => {
+    if (checkBox.checked) {
+      editBtn.style.display = "none";
+      delBtn.style.display = "none";
+    } else {
+      editBtn.style.display = "";
+      delBtn.style.display = "";
+    }
+    saveTodos();
+  });
+
+  // 編集・削除時にも保存
+  editBtn.addEventListener("click", () => setTimeout(saveTodos, 0));
+  delBtn.addEventListener("click", saveTodos);
+
+  // チェック状態の横線
+  if (checked) {
+    li.style.textDecoration = "line-through";
+    editBtn.style.display = "none";
+    delBtn.style.display = "none";
+  }
+
+  return li;
+};
+
 // 編集ボタンを作成する関数
 const createEditButton = (li, span) => {
   const editButton = document.createElement("button");
@@ -11,29 +53,41 @@ const createEditButton = (li, span) => {
 
   // 編集に切り替える処理
   const toEditMode = () => {
-    if (li.querySelector("input")) return;
+    if (li.querySelector('input[type="text"]')) return;
+
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    if (checkBox) checkBox.style.display = "none";
+
     const editInput = document.createElement("input");
     editInput.type = "text";
     editInput.value = span.textContent;
+
     editButton.textContent = "保存する";
     editButton.onclick = toSaveMode;
+
     li.replaceChild(editInput, span);
     editInput.focus();
   };
 
   // 保存に切り替える処理
   const toSaveMode = () => {
-    const editInput = li.querySelector("input");
+    const editInput = li.querySelector("input[type='text']");
     if (!editInput) return;
+
     if (!editInput.value.trim()) {
       alert("文字を入力してください");
       editInput.focus();
       return;
     }
+
     span.textContent = editInput.value;
     li.replaceChild(span, editInput);
+
     editButton.textContent = "編集する";
     editButton.onclick = toEditMode;
+
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    if (checkBox) checkBox.style.display = "";
   };
 
   editButton.onclick = toEditMode;
@@ -51,18 +105,46 @@ const createDeleteButton = (parent) => {
   return deleteButton;
 };
 
-// ToDoアイテムを作成する関数
-const createTodoItem = (text) => {
-  const li = document.createElement("li");
-  const span = document.createElement("span");
-  span.textContent = text;
-  li.appendChild(span);
-  li.appendChild(createEditButton(li, span));
-  li.appendChild(createDeleteButton(li));
-  return li;
+
+// チェックボックスを作成する関数（横線機能付き）
+const createCheckBox = () => {
+  const checkBox = document.createElement("input");
+  checkBox.type = "checkbox";
+  checkBox.addEventListener("change", () => {
+    const li = checkBox.closest("li");
+    if (li) {
+      if (checkBox.checked) {
+        li.style.textDecoration = "line-through";
+      } else {
+        li.style.textDecoration = "";
+      }
+    }
+  });
+  return checkBox;
 };
 
-// 追加ボタンのクリックイベント
+// ToDoリストをローカルストレージに保存
+function saveTodos() {
+  const todos = [];
+  list.querySelectorAll("li").forEach((li) => {
+    const span = li.querySelector("span");
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    todos.push({
+      text: span.textContent,
+      checked: checkBox.checked,
+    });
+  });
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+// ToDoリストをローカルストレージから復元
+function loadTodos() {
+  const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+  todos.forEach((todo) => {
+    list.appendChild(createTodoItem(todo.text, todo.checked));
+  });
+}
+
 add_button.addEventListener("click", () => {
   const text = input.value;
   if (!text) {
@@ -71,4 +153,8 @@ add_button.addEventListener("click", () => {
   }
   list.appendChild(createTodoItem(text));
   input.value = "";
+  saveTodos();
 });
+
+// 初期表示時に復元
+window.addEventListener("DOMContentLoaded", loadTodos);
