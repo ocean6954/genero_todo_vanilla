@@ -3,13 +3,14 @@ const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
 let list_id = 0;
 
-// ToDoアイテムを作成する関数
-const createTodoItem = (text) => {
+// ToDoアイテムを作成する関数（永続化対応）
+const createTodoItem = (text, checked = false) => {
   const li = document.createElement("li");
   const span = document.createElement("span");
   span.textContent = text;
 
   const checkBox = createCheckBox();
+  checkBox.checked = checked;
   const editBtn = createEditButton(li, span);
   const delBtn = createDeleteButton(li);
 
@@ -27,7 +28,19 @@ const createTodoItem = (text) => {
       editBtn.style.display = "";
       delBtn.style.display = "";
     }
+    saveTodos();
   });
+
+  // 編集・削除時にも保存
+  editBtn.addEventListener("click", () => setTimeout(saveTodos, 0));
+  delBtn.addEventListener("click", saveTodos);
+
+  // チェック状態の横線
+  if (checked) {
+    li.style.textDecoration = "line-through";
+    editBtn.style.display = "none";
+    delBtn.style.display = "none";
+  }
 
   return li;
 };
@@ -109,7 +122,28 @@ const createCheckBox = () => {
   return checkBox;
 };
 
-// 追加ボタンのクリックイベント
+// ToDoリストをローカルストレージに保存
+function saveTodos() {
+  const todos = [];
+  list.querySelectorAll("li").forEach((li) => {
+    const span = li.querySelector("span");
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    todos.push({
+      text: span.textContent,
+      checked: checkBox.checked,
+    });
+  });
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+// ToDoリストをローカルストレージから復元
+function loadTodos() {
+  const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+  todos.forEach((todo) => {
+    list.appendChild(createTodoItem(todo.text, todo.checked));
+  });
+}
+
 add_button.addEventListener("click", () => {
   const text = input.value;
   if (!text) {
@@ -118,4 +152,8 @@ add_button.addEventListener("click", () => {
   }
   list.appendChild(createTodoItem(text));
   input.value = "";
+  saveTodos();
 });
+
+// 初期表示時に復元
+window.addEventListener("DOMContentLoaded", loadTodos);
