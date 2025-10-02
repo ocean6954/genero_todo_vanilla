@@ -40,17 +40,6 @@ const createEditButton = (li, span) => {
   return editButton;
 };
 
-// ToDoアイテムを作成する関数
-const createTodoItem = (text) => {
-  const li = document.createElement("li");
-  const span = document.createElement("span");
-  span.textContent = text;
-  li.appendChild(span);
-  li.appendChild(createEditButton(li, span));
-  li.appendChild(createDeleteButton(li));
-  return li;
-};
-
 // 削除ボタンを作成する関数
 const createDeleteButton = (parent) => {
   const deleteButton = document.createElement("button");
@@ -60,6 +49,17 @@ const createDeleteButton = (parent) => {
     parent.remove();
   });
   return deleteButton;
+};
+
+// ToDoアイテムを作成する関数
+const createTodoItem = (text) => {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  span.textContent = text;
+  li.appendChild(span);
+  li.appendChild(createEditButton(li, span));
+  li.appendChild(createDeleteButton(li));
+  return li;
 };
 
 // 追加ボタンのクリックイベント
