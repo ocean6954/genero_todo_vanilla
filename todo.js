@@ -3,6 +3,7 @@ const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
 let list_id = 0;
 
+
 // ToDoアイテムを作成する関数
 const createTodoItem = (text) => {
   const li = document.createElement("li");
@@ -91,6 +92,7 @@ const createDeleteButton = (parent) => {
   });
   return deleteButton;
 };
+
 
 // チェックボックスを作成する関数（横線機能付き）
 const createCheckBox = () => {
