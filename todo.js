@@ -1,27 +1,33 @@
 const input = document.getElementById("todo-input");
-const button = document.getElementById("add-button");
+const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
-
 let list_id = 0;
 
-button.addEventListener("click", () => {
-  const text = input.value;
-  if (!text) return;
-
+const createTodoItem = (text) => {
   const li = document.createElement("li");
-  const del = document.createElement("button");
-  console.log(del);
-  li.textContent = text;
-  li.id = list_id;
-  del.textContent = "削除する";
-  del.addEventListener("click", () => {
-    const target = document.getElementById(li.id);
-    target.remove();
+  const span = document.createElement("span");
+  span.textContent = text;
+  li.appendChild(span);
+  li.appendChild(createDeleteButton(li));
+  return li;
+};
+
+const createDeleteButton = (parent) => {
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.textContent = "削除する";
+  deleteButton.addEventListener("click", () => {
+    parent.remove();
   });
+  return deleteButton;
+};
 
-  li.appendChild(del);
-  list.appendChild(li);
-
+add_button.addEventListener("click", () => {
+  const text = input.value;
+  if (!text) {
+    alert("文字を入力してください");
+    return;
+  }
+  list.appendChild(createTodoItem(text));
   input.value = "";
-  list_id++;
 });
