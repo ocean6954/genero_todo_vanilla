@@ -105,6 +105,7 @@ const createDeleteButton = (parent) => {
   return deleteButton;
 };
 
+
 // チェックボックスを作成する関数（横線機能付き）
 const createCheckBox = () => {
   const checkBox = document.createElement("input");
