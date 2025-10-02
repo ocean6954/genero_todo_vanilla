@@ -3,6 +3,31 @@ const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
 let list_id = 0;
 
+// ToDoアイテムを作成する関数
+const createTodoItem = (text) => {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  span.textContent = text;
+  const checkBox = createCheckBox();
+  const editBtn = createEditButton(li, span);
+  const delBtn = createDeleteButton(li);
+  li.appendChild(checkBox);
+  li.appendChild(span);
+  li.appendChild(editBtn);
+  li.appendChild(delBtn);
+  // チェックボックスの表示制御
+  checkBox.addEventListener("change", () => {
+    if (checkBox.checked) {
+      editBtn.style.display = "none";
+      delBtn.style.display = "none";
+    } else {
+      editBtn.style.display = "";
+      delBtn.style.display = "";
+    }
+  });
+  return li;
+};
+
 // 編集ボタンを作成する関数
 const createEditButton = (li, span) => {
   const editButton = document.createElement("button");
@@ -11,7 +36,9 @@ const createEditButton = (li, span) => {
 
   // 編集に切り替える処理
   const toEditMode = () => {
-    if (li.querySelector("input")) return;
+    if (li.querySelector('input[type="text"]')) return;
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    if (checkBox) checkBox.style.display = "none";
     const editInput = document.createElement("input");
     editInput.type = "text";
     editInput.value = span.textContent;
@@ -23,7 +50,7 @@ const createEditButton = (li, span) => {
 
   // 保存に切り替える処理
   const toSaveMode = () => {
-    const editInput = li.querySelector("input");
+    const editInput = li.querySelector("input[type='text']");
     if (!editInput) return;
     if (!editInput.value.trim()) {
       alert("文字を入力してください");
@@ -34,21 +61,12 @@ const createEditButton = (li, span) => {
     li.replaceChild(span, editInput);
     editButton.textContent = "編集する";
     editButton.onclick = toEditMode;
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    if (checkBox) checkBox.style.display = "";
   };
 
   editButton.onclick = toEditMode;
   return editButton;
-};
-
-// ToDoアイテムを作成する関数
-const createTodoItem = (text) => {
-  const li = document.createElement("li");
-  const span = document.createElement("span");
-  span.textContent = text;
-  li.appendChild(span);
-  li.appendChild(createEditButton(li, span));
-  li.appendChild(createDeleteButton(li));
-  return li;
 };
 
 // 削除ボタンを作成する関数
@@ -60,6 +78,23 @@ const createDeleteButton = (parent) => {
     parent.remove();
   });
   return deleteButton;
+};
+
+// チェックボックスを作成する関数（横線機能付き）
+const createCheckBox = () => {
+  const checkBox = document.createElement("input");
+  checkBox.type = "checkbox";
+  checkBox.addEventListener("change", (e) => {
+    const li = checkBox.closest("li");
+    if (li) {
+      if (checkBox.checked) {
+        li.style.textDecoration = "line-through";
+      } else {
+        li.style.textDecoration = "";
+      }
+    }
+  });
+  return checkBox;
 };
 
 // 追加ボタンのクリックイベント
