@@ -8,13 +8,16 @@ const createTodoItem = (text) => {
   const li = document.createElement("li");
   const span = document.createElement("span");
   span.textContent = text;
+
   const checkBox = createCheckBox();
   const editBtn = createEditButton(li, span);
   const delBtn = createDeleteButton(li);
+
   li.appendChild(checkBox);
   li.appendChild(span);
   li.appendChild(editBtn);
   li.appendChild(delBtn);
+
   // チェックボックスの表示制御
   checkBox.addEventListener("change", () => {
     if (checkBox.checked) {
@@ -25,6 +28,7 @@ const createTodoItem = (text) => {
       delBtn.style.display = "";
     }
   });
+
   return li;
 };
 
@@ -37,13 +41,17 @@ const createEditButton = (li, span) => {
   // 編集に切り替える処理
   const toEditMode = () => {
     if (li.querySelector('input[type="text"]')) return;
+
     const checkBox = li.querySelector('input[type="checkbox"]');
     if (checkBox) checkBox.style.display = "none";
+
     const editInput = document.createElement("input");
     editInput.type = "text";
     editInput.value = span.textContent;
+
     editButton.textContent = "保存する";
     editButton.onclick = toSaveMode;
+
     li.replaceChild(editInput, span);
     editInput.focus();
   };
@@ -52,15 +60,19 @@ const createEditButton = (li, span) => {
   const toSaveMode = () => {
     const editInput = li.querySelector("input[type='text']");
     if (!editInput) return;
+
     if (!editInput.value.trim()) {
       alert("文字を入力してください");
       editInput.focus();
       return;
     }
+
     span.textContent = editInput.value;
     li.replaceChild(span, editInput);
+
     editButton.textContent = "編集する";
     editButton.onclick = toEditMode;
+
     const checkBox = li.querySelector('input[type="checkbox"]');
     if (checkBox) checkBox.style.display = "";
   };
@@ -84,7 +96,7 @@ const createDeleteButton = (parent) => {
 const createCheckBox = () => {
   const checkBox = document.createElement("input");
   checkBox.type = "checkbox";
-  checkBox.addEventListener("change", (e) => {
+  checkBox.addEventListener("change", () => {
     const li = checkBox.closest("li");
     if (li) {
       if (checkBox.checked) {
