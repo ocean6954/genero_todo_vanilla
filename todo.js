@@ -189,5 +189,25 @@ addButton.addEventListener("click", () => {
   saveTodos();
 });
 
-// 初期表示時に復元
-window.addEventListener("DOMContentLoaded", loadTodos);
+  if (text.length > 50) {
+    alert("50文字以内で入力してください");
+    return;
+  }
+
+  const exists = Array.from(list.children).some((li) => {
+    const span = li.querySelector("span");
+    return span && span.textContent === text;
+  });
+  if (exists) {
+    alert("同じ内容のタスクが既に存在します");
+    return;
+  }
+
+  try {
+    list.appendChild(createTodoItem(text));
+    input.value = "";
+    saveTodos();
+  } catch (e) {
+    alert("タスクの追加に失敗しました: " + e.message);
+  }
+});
