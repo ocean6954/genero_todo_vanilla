@@ -1,25 +1,50 @@
+// DOM要素の取得
 const input = document.getElementById("todo-input");
-const add_button = document.getElementById("add-button");
-const list = document.getElementById("todo-list");
-let list_id = 0;
+const addButton = document.getElementById("add-button");
+const todoList = document.getElementById("todo-list");
 
-// ToDoアイテムを作成する関数
+// CSSクラス名の定数
+const CSS_CLASSES = {
+  TODO_ITEM: "list-group-item todo-item d-flex align-items-center",
+  TODO_TEXT: "todo-text flex-grow-1 ms-3",
+  TODO_ACTIONS: "todo-actions",
+  CUSTOM_CHECKBOX: "custom-checkbox",
+  ACTION_BTN: "action-btn",
+  EDIT_BTN: "edit-btn",
+  SAVE_BTN: "save-btn",
+  DELETE_BTN: "delete-btn",
+  EDIT_INPUT: "form-control edit-input",
+  COMPLETED: "completed",
+  CHECKED: "checked",
+};
+
+// メッセージ定数
+const MESSAGES = {
+  EMPTY_INPUT: "文字を入力してください",
+};
+
+/**
+ * ToDoアイテムを作成する関数
+ * @param {string} text - タスクのテキスト
+ * @param {boolean} checked - チェック状態
+ * @returns {HTMLElement} - 作成されたli要素
+ */
 const createTodoItem = (text, checked = false) => {
   const li = document.createElement("li");
-  li.className = "list-group-item todo-item d-flex align-items-center";
+  li.className = CSS_CLASSES.TODO_ITEM;
 
   const checkBox = createCheckBox();
   checkBox.checked = checked;
 
   const span = document.createElement("span");
-  span.className = "todo-text flex-grow-1 ms-3";
+  span.className = CSS_CLASSES.TODO_TEXT;
   span.textContent = text;
 
   const editBtn = createEditButton(li, span);
   const delBtn = createDeleteButton(li);
 
   const buttonGroup = document.createElement("div");
-  buttonGroup.className = "todo-actions";
+  buttonGroup.className = CSS_CLASSES.TODO_ACTIONS;
   buttonGroup.appendChild(editBtn);
   buttonGroup.appendChild(delBtn);
 
@@ -27,13 +52,13 @@ const createTodoItem = (text, checked = false) => {
   li.appendChild(span);
   li.appendChild(buttonGroup);
 
-  // チェックボックスの表示制御
+  // チェックボックスの状態変更時の処理
   checkBox.addEventListener("change", () => {
     if (checkBox.checked) {
-      span.classList.add("completed");
+      span.classList.add(CSS_CLASSES.COMPLETED);
       buttonGroup.style.display = "none";
     } else {
-      span.classList.remove("completed");
+      span.classList.remove(CSS_CLASSES.COMPLETED);
       buttonGroup.style.display = "";
     }
   });
@@ -41,19 +66,24 @@ const createTodoItem = (text, checked = false) => {
   // 初期状態の設定
   if (checked) {
     checkBox.checked = true;
-    checkBox.classList.add("checked");
-    span.classList.add("completed");
+    checkBox.classList.add(CSS_CLASSES.CHECKED);
+    span.classList.add(CSS_CLASSES.COMPLETED);
     buttonGroup.style.display = "none";
   }
 
   return li;
 };
 
-// 編集ボタンを作成する関数
+/**
+ * 編集ボタンを作成する関数
+ * @param {HTMLElement} li - 親要素
+ * @param {HTMLElement} span - テキスト要素
+ * @returns {HTMLElement} - 編集ボタン
+ */
 const createEditButton = (li, span) => {
   const editButton = document.createElement("button");
   editButton.type = "button";
-  editButton.className = "action-btn edit-btn";
+  editButton.className = `${CSS_CLASSES.ACTION_BTN} ${CSS_CLASSES.EDIT_BTN}`;
   editButton.textContent = "Edit";
 
   // 編集に切り替える処理
@@ -65,12 +95,15 @@ const createEditButton = (li, span) => {
 
     const editInput = document.createElement("input");
     editInput.type = "text";
-    editInput.className = "form-control edit-input";
+    editInput.className = CSS_CLASSES.EDIT_INPUT;
     editInput.value = span.textContent;
 
     editButton.textContent = "Save";
-    editButton.className = "action-btn save-btn";
-    editButton.onclick = toSaveMode;
+    editButton.className = `${CSS_CLASSES.ACTION_BTN} ${CSS_CLASSES.SAVE_BTN}`;
+
+    // 既存のイベントリスナーを削除して新しいものを追加
+    editButton.removeEventListener("click", toEditMode);
+    editButton.addEventListener("click", toSaveMode);
 
     li.replaceChild(editInput, span);
     editInput.focus();
@@ -82,7 +115,7 @@ const createEditButton = (li, span) => {
     if (!editInput) return;
 
     if (!editInput.value.trim()) {
-      alert("文字を入力してください");
+      alert(MESSAGES.EMPTY_INPUT);
       editInput.focus();
       return;
     }
@@ -91,22 +124,29 @@ const createEditButton = (li, span) => {
     li.replaceChild(span, editInput);
 
     editButton.textContent = "Edit";
-    editButton.className = "action-btn edit-btn";
-    editButton.onclick = toEditMode;
+    editButton.className = `${CSS_CLASSES.ACTION_BTN} ${CSS_CLASSES.EDIT_BTN}`;
+
+    // 既存のイベントリスナーを削除して新しいものを追加
+    editButton.removeEventListener("click", toSaveMode);
+    editButton.addEventListener("click", toEditMode);
 
     const checkBox = li.querySelector('input[type="checkbox"]');
     if (checkBox) checkBox.style.display = "";
   };
 
-  editButton.onclick = toEditMode;
+  editButton.addEventListener("click", toEditMode);
   return editButton;
 };
 
-// 削除ボタンを作成する関数
+/**
+ * 削除ボタンを作成する関数
+ * @param {HTMLElement} parent - 削除対象の親要素
+ * @returns {HTMLElement} - 削除ボタン
+ */
 const createDeleteButton = (parent) => {
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
-  deleteButton.className = "action-btn delete-btn";
+  deleteButton.className = `${CSS_CLASSES.ACTION_BTN} ${CSS_CLASSES.DELETE_BTN}`;
   deleteButton.textContent = "Delete";
   deleteButton.addEventListener("click", () => {
     parent.remove();
@@ -114,16 +154,19 @@ const createDeleteButton = (parent) => {
   return deleteButton;
 };
 
-// カスタムチェックボックスを作成する関数
+/**
+ * カスタムチェックボックスを作成する関数
+ * @returns {HTMLElement} - カスタムチェックボックス
+ */
 const createCheckBox = () => {
   const checkBox = document.createElement("div");
-  checkBox.className = "custom-checkbox";
+  checkBox.className = CSS_CLASSES.CUSTOM_CHECKBOX;
   checkBox.addEventListener("click", () => {
     checkBox.checked = !checkBox.checked;
     if (checkBox.checked) {
-      checkBox.classList.add("checked");
+      checkBox.classList.add(CSS_CLASSES.CHECKED);
     } else {
-      checkBox.classList.remove("checked");
+      checkBox.classList.remove(CSS_CLASSES.CHECKED);
     }
     // チェンジイベントをトリガー
     const event = new Event("change");
@@ -132,35 +175,16 @@ const createCheckBox = () => {
   return checkBox;
 };
 
-// ToDoリストをローカルストレージに保存
-function saveTodos() {
-  const todos = [];
-  list.querySelectorAll("li").forEach((li) => {
-    const span = li.querySelector("span");
-    const checkBox = li.querySelector('input[type="checkbox"]');
-    todos.push({
-      text: span.textContent,
-      checked: checkBox.checked,
-    });
-  });
-  localStorage.setItem("todos", JSON.stringify(todos));
-}
-
-// ToDoリストをローカルストレージから復元
-function loadTodos() {
-  const todos = JSON.parse(localStorage.getItem("todos") || "[]");
-  todos.forEach((todo) => {
-    list.appendChild(createTodoItem(todo.text, todo.checked));
-  });
-}
-
-add_button.addEventListener("click", () => {
-  const text = input.value;
+/**
+ * 追加ボタンのクリックイベント
+ */
+addButton.addEventListener("click", () => {
+  const text = input.value.trim();
   if (!text) {
-    alert("文字を入力してください");
+    alert(MESSAGES.EMPTY_INPUT);
     return;
   }
-  list.appendChild(createTodoItem(text));
+  todoList.appendChild(createTodoItem(text));
   input.value = "";
   saveTodos();
 });
