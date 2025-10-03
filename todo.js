@@ -3,32 +3,48 @@ const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
 let list_id = 0;
 
-
 // ToDoアイテムを作成する関数
-const createTodoItem = (text) => {
+const createTodoItem = (text, checked = false) => {
   const li = document.createElement("li");
-  const span = document.createElement("span");
-  span.textContent = text;
+  li.className = "list-group-item todo-item d-flex align-items-center";
 
   const checkBox = createCheckBox();
+  checkBox.checked = checked;
+
+  const span = document.createElement("span");
+  span.className = "todo-text flex-grow-1 ms-3";
+  span.textContent = text;
+
   const editBtn = createEditButton(li, span);
   const delBtn = createDeleteButton(li);
 
+  const buttonGroup = document.createElement("div");
+  buttonGroup.className = "todo-actions";
+  buttonGroup.appendChild(editBtn);
+  buttonGroup.appendChild(delBtn);
+
   li.appendChild(checkBox);
   li.appendChild(span);
-  li.appendChild(editBtn);
-  li.appendChild(delBtn);
+  li.appendChild(buttonGroup);
 
   // チェックボックスの表示制御
   checkBox.addEventListener("change", () => {
     if (checkBox.checked) {
-      editBtn.style.display = "none";
-      delBtn.style.display = "none";
+      span.classList.add("completed");
+      buttonGroup.style.display = "none";
     } else {
-      editBtn.style.display = "";
-      delBtn.style.display = "";
+      span.classList.remove("completed");
+      buttonGroup.style.display = "";
     }
   });
+
+  // 初期状態の設定
+  if (checked) {
+    checkBox.checked = true;
+    checkBox.classList.add("checked");
+    span.classList.add("completed");
+    buttonGroup.style.display = "none";
+  }
 
   return li;
 };
@@ -37,7 +53,8 @@ const createTodoItem = (text) => {
 const createEditButton = (li, span) => {
   const editButton = document.createElement("button");
   editButton.type = "button";
-  editButton.textContent = "編集する";
+  editButton.className = "action-btn edit-btn";
+  editButton.textContent = "Edit";
 
   // 編集に切り替える処理
   const toEditMode = () => {
@@ -48,9 +65,11 @@ const createEditButton = (li, span) => {
 
     const editInput = document.createElement("input");
     editInput.type = "text";
+    editInput.className = "form-control edit-input";
     editInput.value = span.textContent;
 
-    editButton.textContent = "保存する";
+    editButton.textContent = "Save";
+    editButton.className = "action-btn save-btn";
     editButton.onclick = toSaveMode;
 
     li.replaceChild(editInput, span);
@@ -71,7 +90,8 @@ const createEditButton = (li, span) => {
     span.textContent = editInput.value;
     li.replaceChild(span, editInput);
 
-    editButton.textContent = "編集する";
+    editButton.textContent = "Edit";
+    editButton.className = "action-btn edit-btn";
     editButton.onclick = toEditMode;
 
     const checkBox = li.querySelector('input[type="checkbox"]');
@@ -86,27 +106,28 @@ const createEditButton = (li, span) => {
 const createDeleteButton = (parent) => {
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
-  deleteButton.textContent = "削除する";
+  deleteButton.className = "action-btn delete-btn";
+  deleteButton.textContent = "Delete";
   deleteButton.addEventListener("click", () => {
     parent.remove();
   });
   return deleteButton;
 };
 
-
-// チェックボックスを作成する関数（横線機能付き）
+// カスタムチェックボックスを作成する関数
 const createCheckBox = () => {
-  const checkBox = document.createElement("input");
-  checkBox.type = "checkbox";
-  checkBox.addEventListener("change", () => {
-    const li = checkBox.closest("li");
-    if (li) {
-      if (checkBox.checked) {
-        li.style.textDecoration = "line-through";
-      } else {
-        li.style.textDecoration = "";
-      }
+  const checkBox = document.createElement("div");
+  checkBox.className = "custom-checkbox";
+  checkBox.addEventListener("click", () => {
+    checkBox.checked = !checkBox.checked;
+    if (checkBox.checked) {
+      checkBox.classList.add("checked");
+    } else {
+      checkBox.classList.remove("checked");
     }
+    // チェンジイベントをトリガー
+    const event = new Event("change");
+    checkBox.dispatchEvent(event);
   });
   return checkBox;
 };
