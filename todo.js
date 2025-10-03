@@ -132,7 +132,28 @@ const createCheckBox = () => {
   return checkBox;
 };
 
-// 追加ボタンのクリックイベント
+// ToDoリストをローカルストレージに保存
+function saveTodos() {
+  const todos = [];
+  list.querySelectorAll("li").forEach((li) => {
+    const span = li.querySelector("span");
+    const checkBox = li.querySelector('input[type="checkbox"]');
+    todos.push({
+      text: span.textContent,
+      checked: checkBox.checked,
+    });
+  });
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+// ToDoリストをローカルストレージから復元
+function loadTodos() {
+  const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+  todos.forEach((todo) => {
+    list.appendChild(createTodoItem(todo.text, todo.checked));
+  });
+}
+
 add_button.addEventListener("click", () => {
   const text = input.value;
   if (!text) {
@@ -141,4 +162,8 @@ add_button.addEventListener("click", () => {
   }
   list.appendChild(createTodoItem(text));
   input.value = "";
+  saveTodos();
 });
+
+// 初期表示時に復元
+window.addEventListener("DOMContentLoaded", loadTodos);
