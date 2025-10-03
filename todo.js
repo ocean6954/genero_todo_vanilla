@@ -3,14 +3,14 @@ const add_button = document.getElementById("add-button");
 const list = document.getElementById("todo-list");
 let list_id = 0;
 
-// ToDoアイテムを作成する関数（永続化対応）
-const createTodoItem = (text, checked = false) => {
+
+// ToDoアイテムを作成する関数
+const createTodoItem = (text) => {
   const li = document.createElement("li");
   const span = document.createElement("span");
   span.textContent = text;
 
   const checkBox = createCheckBox();
-  checkBox.checked = checked;
   const editBtn = createEditButton(li, span);
   const delBtn = createDeleteButton(li);
 
@@ -28,19 +28,7 @@ const createTodoItem = (text, checked = false) => {
       editBtn.style.display = "";
       delBtn.style.display = "";
     }
-    saveTodos();
   });
-
-  // 編集・削除時にも保存
-  editBtn.addEventListener("click", () => setTimeout(saveTodos, 0));
-  delBtn.addEventListener("click", saveTodos);
-
-  // チェック状態の横線
-  if (checked) {
-    li.style.textDecoration = "line-through";
-    editBtn.style.display = "none";
-    delBtn.style.display = "none";
-  }
 
   return li;
 };
@@ -104,6 +92,7 @@ const createDeleteButton = (parent) => {
   });
   return deleteButton;
 };
+
 
 // チェックボックスを作成する関数（横線機能付き）
 const createCheckBox = () => {
@@ -181,6 +170,3 @@ add_button.addEventListener("click", () => {
     alert("タスクの追加に失敗しました: " + e.message);
   }
 });
-
-// 初期表示時に復元
-window.addEventListener("DOMContentLoaded", loadTodos);
