@@ -111,13 +111,62 @@ const createCheckBox = () => {
   return checkBox;
 };
 
-// 追加ボタンのクリックイベント
+// ToDoリストをローカルストレージに保存
+function saveTodos() {
+  try {
+    const todos = [];
+    list.querySelectorAll("li").forEach((li) => {
+      const span = li.querySelector("span");
+      const checkBox = li.querySelector('input[type="checkbox"]');
+      todos.push({
+        text: span.textContent,
+        checked: checkBox.checked,
+      });
+    });
+    localStorage.setItem("todos", JSON.stringify(todos));
+  } catch (e) {
+    alert("データの保存に失敗しました: " + e.message);
+  }
+}
+
+// ToDoリストをローカルストレージから復元
+function loadTodos() {
+  try {
+    const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+    todos.forEach((todo) => {
+      list.appendChild(createTodoItem(todo.text, todo.checked));
+    });
+  } catch (e) {
+    alert("データの復元に失敗しました: " + e.message);
+  }
+}
+
 add_button.addEventListener("click", () => {
   const text = input.value;
   if (!text) {
     alert("文字を入力してください");
     return;
   }
-  list.appendChild(createTodoItem(text));
-  input.value = "";
+
+  if (text.length > 50) {
+    alert("50文字以内で入力してください");
+    return;
+  }
+
+  const exists = Array.from(list.children).some((li) => {
+    const span = li.querySelector("span");
+    return span && span.textContent === text;
+  });
+  if (exists) {
+    alert("同じ内容のタスクが既に存在します");
+    return;
+  }
+
+  try {
+    list.appendChild(createTodoItem(text));
+    input.value = "";
+    saveTodos();
+  } catch (e) {
+    alert("タスクの追加に失敗しました: " + e.message);
+  }
 });
